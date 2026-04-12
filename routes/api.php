@@ -7,6 +7,7 @@ use App\Http\Controllers\TaskController;
 
 // Public
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
 
 // Protected
 Route::middleware('auth:sanctum')->group(function () {
