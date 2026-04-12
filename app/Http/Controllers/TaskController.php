@@ -18,6 +18,11 @@ class TaskController extends Controller
             $query->where('assigned_to', $user->id);
         }
 
+        // Auto-mark overdue tasks
+        Task::where('due_date', '<', now()->toDateString())
+            ->whereNotIn('status', ['DONE', 'OVERDUE'])
+            ->update(['status' => 'OVERDUE']);
+
         return response()->json(['success' => true, 'data' => $query->get()]);
     }
 
