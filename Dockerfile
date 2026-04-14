@@ -17,14 +17,14 @@ COPY . .
 # Install dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Permissions
+# Set permissions
 RUN chmod -R 777 storage bootstrap/cache
 
-# Apache config
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Expose port
+# Expose port (Render uses 10000)
 EXPOSE 10000
 
-# Start server
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# IMPORTANT: run migrate at runtime (NOT build time)
+CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
