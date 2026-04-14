@@ -26,3 +26,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks', [TaskController::class, 'store']);
     Route::patch('/tasks/{id}', [TaskController::class, 'update']);
 });
+
+Route::get('/test', function () {
+    return response()->json([
+        'message' => 'API working 🚀'
+    ]);
+});
