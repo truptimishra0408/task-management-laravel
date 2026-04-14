@@ -1,16 +1,30 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
-WORKDIR /app
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    libzip-dev zip unzip git curl \
+    && docker-php-ext-install pdo pdo_mysql
 
+# Enable Apache rewrite
+RUN a2enmod rewrite
+
+# Set working dir
+WORKDIR /var/www/html
+
+# Copy project
 COPY . .
 
-RUN apt-get update && apt-get install -y \
-    unzip git curl libsqlite3-dev
-
-RUN docker-php-ext-install pdo pdo_sqlite
-
+# Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer install --no-dev --optimize-autoloader
+# Install Laravel deps
+RUN composer install
 
-CMD php artisan serve --host=0.0.0.0 --port=10000
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage
+
+# Set Apache root to public
+RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+
+EXPOSE 80
