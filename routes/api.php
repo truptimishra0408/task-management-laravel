@@ -29,6 +29,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/test', function () {
     return response()->json([
-        'message' => 'API working 🚀'
+        'message' => 'API working'
     ]);
 });
