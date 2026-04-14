@@ -11,10 +11,10 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project
+# Copy project files
 COPY . .
 
-# Install dependencies
+# Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
 # Set permissions
@@ -26,5 +26,5 @@ RUN a2enmod rewrite
 # Expose port (Render uses 10000)
 EXPOSE 10000
 
-# IMPORTANT: run migrate at runtime (NOT build time)
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000
+# FINAL SAFE COMMAND (IMPORTANT)
+CMD php artisan migrate --force || true && php artisan serve --host=0.0.0.0 --port=10000
