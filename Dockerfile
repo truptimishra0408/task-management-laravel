@@ -1,9 +1,9 @@
 FROM php:8.2-apache
 
-# Install dependencies
+# Install dependencies (SQLite instead of MySQL)
 RUN apt-get update && apt-get install -y \
-    zip unzip git curl libzip-dev \
-    && docker-php-ext-install zip pdo pdo_mysql
+    zip unzip git curl libzip-dev libsqlite3-dev \
+    && docker-php-ext-install zip pdo pdo_sqlite
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -17,8 +17,17 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
+# Setup .env
+RUN cp .env.example .env
+
+# Create SQLite database file
+RUN mkdir -p database && touch database/database.sqlite
+
+# Generate app key
+RUN php artisan key:generate
+
 # Set permissions
-RUN chmod -R 777 storage bootstrap/cache
+RUN chmod -R 777 storage bootstrap/cache database
 
 # Enable Apache rewrite
 RUN a2enmod rewrite
@@ -29,6 +38,10 @@ ENV APACHE_DOCUMENT_ROOT /var/www/html/public
 # Update Apache config
 RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
 RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
+
+# Fix Apache port to 10000 for Render
+RUN sed -i 's/Listen 80/Listen 10000/' /etc/apache2/ports.conf \
+    && sed -i 's/<VirtualHost \*:80>/<VirtualHost *:10000>/' /etc/apache2/sites-available/000-default.conf
 
 # Expose port
 EXPOSE 10000
